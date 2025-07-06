@@ -8,7 +8,10 @@ WORKDIR /app
 COPY package*.json ./
 
 # 安裝後端依賴
-RUN npm install
+RUN npm install --production
+
+# 建立 client 目錄
+RUN mkdir -p client
 
 # 複製前端 package.json
 COPY client/package*.json ./client/
