@@ -1,0 +1,318 @@
+.App {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+  border-radius: 10px;
+  margin-bottom: 30px;
+}
+
+.App-header h1 {
+  margin: 0 0 10px 0;
+  font-size: 2rem;
+}
+
+.App-header p {
+  margin: 0;
+  opacity: 0.8;
+}
+
+.App-main {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* API 金鑰區域 */
+.api-key-section {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #dee2e6;
+}
+
+.api-key-section h2 {
+  margin-top: 0;
+  color: #495057;
+}
+
+.api-key-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.api-key-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* 錄音區域 */
+.recording-section {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #dee2e6;
+}
+
+.recording-section h2 {
+  margin-top: 0;
+  color: #495057;
+}
+
+.recording-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.record-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.record-button:hover {
+  background-color: #218838;
+}
+
+.stop-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.stop-button:hover {
+  background-color: #c82333;
+}
+
+.recording-indicator {
+  color: #dc3545;
+  font-weight: bold;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* 檔案上傳區域 */
+.upload-section {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #dee2e6;
+}
+
+.upload-section h2 {
+  margin-top: 0;
+  color: #495057;
+}
+
+.file-input {
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.file-info {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #e9ecef;
+  border-radius: 5px;
+  text-align: left;
+}
+
+.file-info p {
+  margin: 5px 0;
+  color: #495057;
+}
+
+/* 功能選項 */
+.options-section {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #dee2e6;
+}
+
+.options-section h2 {
+  margin-top: 0;
+  color: #495057;
+}
+
+.option {
+  margin: 10px 0;
+  text-align: left;
+}
+
+.option label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #495057;
+}
+
+.option input[type="checkbox"] {
+  margin-right: 10px;
+  transform: scale(1.2);
+}
+
+/* 轉錄按鈕 */
+.transcribe-section {
+  margin: 20px 0;
+}
+
+.transcribe-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  min-width: 150px;
+}
+
+.transcribe-button:hover:not(:disabled) {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+.transcribe-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 錯誤訊息 */
+.error-section {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+.error-message {
+  margin: 0;
+  font-weight: bold;
+}
+
+/* 結果區域 */
+.results-section, .speakers-section, .summary-section {
+  background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: left;
+}
+
+.results-section h2, .speakers-section h2, .summary-section h2 {
+  margin-top: 0;
+  color: #155724;
+}
+
+.transcription-text, .summary-text {
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #c3e6cb;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* 說話者識別 */
+.speaker-segments {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.speaker-segment {
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #c3e6cb;
+}
+
+.speaker-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.speaker-name {
+  font-weight: bold;
+  color: #007bff;
+  font-size: 14px;
+}
+
+.time-range {
+  color: #6c757d;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+.speaker-text {
+  color: #333;
+  line-height: 1.5;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .App {
+    padding: 10px;
+  }
+  
+  .App-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .recording-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .speaker-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+}

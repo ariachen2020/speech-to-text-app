@@ -1,0 +1,11 @@
+name: speech-to-text-app
+services:
+  speech-to-text:
+    type: nodejs
+    buildCommand: npm install && cd client && npm install && npm run build
+    startCommand: npm start
+    env:
+      NODE_ENV: production
+      PORT: 3000
+    ports:
+      - 3000
