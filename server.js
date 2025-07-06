@@ -19,6 +19,11 @@ app.use(express.static('client/build'));
 // 支援的音訊格式
 const supportedFormats = ['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac', '.mp4'];
 
+// 確保 uploads 目錄存在
+if (!fs.existsSync('uploads')) {
+    fs.mkdirSync('uploads', { recursive: true });
+}
+
 const upload = multer({ 
     dest: 'uploads/',
     fileFilter: (req, file, cb) => {
@@ -34,6 +39,12 @@ const upload = multer({
 // 轉換音訊格式為 mp3（如果需要）
 async function convertToMp3(inputPath) {
     return new Promise((resolve, reject) => {
+        // 檢查輸入檔案是否存在
+        if (!fs.existsSync(inputPath)) {
+            reject(new Error(`輸入檔案不存在: ${inputPath}`));
+            return;
+        }
+
         const ext = path.extname(inputPath).toLowerCase();
         
         // 如果已經是 mp3，直接返回
@@ -42,7 +53,7 @@ async function convertToMp3(inputPath) {
             return;
         }
         
-        const outputPath = inputPath.replace(ext, '.mp3');
+        const outputPath = inputPath + '.mp3';
         
         ffmpeg(inputPath)
             .audioCodec('libmp3lame')
@@ -52,7 +63,10 @@ async function convertToMp3(inputPath) {
             .on('end', () => {
                 resolve(outputPath);
             })
-            .on('error', reject)
+            .on('error', (err) => {
+                console.error('FFmpeg 錯誤:', err);
+                reject(err);
+            })
             .run();
     });
 }
@@ -133,6 +147,13 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
             return res.status(400).json({ error: '請上傳音訊檔案' });
         }
 
+        console.log('收到檔案:', {
+            originalname: audioFile.originalname,
+            mimetype: audioFile.mimetype,
+            size: audioFile.size,
+            path: audioFile.path
+        });
+
         // 轉換為 mp3 格式（如果需要）
         const mp3Path = await convertToMp3(audioFile.path);
 
@@ -208,9 +229,15 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
         }
 
         // 清理上傳的檔案
-        fs.unlinkSync(audioFile.path);
-        if (mp3Path !== audioFile.path) {
-            fs.unlinkSync(mp3Path);
+        try {
+            if (fs.existsSync(audioFile.path)) {
+                fs.unlinkSync(audioFile.path);
+            }
+            if (mp3Path !== audioFile.path && fs.existsSync(mp3Path)) {
+                fs.unlinkSync(mp3Path);
+            }
+        } catch (cleanupError) {
+            console.error('清理檔案時發生錯誤:', cleanupError);
         }
 
         res.json(response);
