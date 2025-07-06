@@ -167,20 +167,38 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
             // 切割大檔案
             const chunkPaths = await splitAudioFile(mp3Path);
             
-            // 處理每個切片
-            for (const chunkPath of chunkPaths) {
-                const transcription = await openai.audio.transcriptions.create({
-                    file: fs.createReadStream(chunkPath),
-                    model: 'whisper-1',
-                    response_format: 'verbose_json',
-                    timestamp_granularities: ['segment']
-                });
-                
-                transcriptionResults.push(transcription);
-                
-                // 清理切片檔案
-                fs.unlinkSync(chunkPath);
-            }
+            console.log(`檔案已切割為 ${chunkPaths.length} 個片段，開始並行處理...`);
+            
+            // 並行處理所有切片以提高速度
+            const transcriptionPromises = chunkPaths.map(async (chunkPath, index) => {
+                console.log(`開始處理片段 ${index + 1}/${chunkPaths.length}`);
+                try {
+                    const transcription = await openai.audio.transcriptions.create({
+                        file: fs.createReadStream(chunkPath),
+                        model: 'whisper-1',
+                        response_format: 'verbose_json',
+                        timestamp_granularities: ['segment']
+                    });
+                    
+                    console.log(`片段 ${index + 1} 處理完成`);
+                    
+                    // 清理切片檔案
+                    if (fs.existsSync(chunkPath)) {
+                        fs.unlinkSync(chunkPath);
+                    }
+                    
+                    return transcription;
+                } catch (error) {
+                    console.error(`片段 ${index + 1} 處理失敗:`, error);
+                    // 清理失敗的切片檔案
+                    if (fs.existsSync(chunkPath)) {
+                        fs.unlinkSync(chunkPath);
+                    }
+                    throw error;
+                }
+            });
+            
+            transcriptionResults = await Promise.all(transcriptionPromises);
         } else {
             // 直接處理小檔案
             const transcription = await openai.audio.transcriptions.create({

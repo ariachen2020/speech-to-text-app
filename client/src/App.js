@@ -10,6 +10,7 @@ function App() {
   const [speakerSegments, setSpeakerSegments] = useState([]);
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState('');
   const [enableSpeakerIdentification, setEnableSpeakerIdentification] = useState(false);
   const [enableSummarization, setEnableSummarization] = useState(false);
   const [error, setError] = useState('');
@@ -75,6 +76,7 @@ function App() {
     setTranscription('');
     setSpeakerSegments([]);
     setSummary('');
+    setProgress('準備上傳檔案...');
 
     try {
       const formData = new FormData();
@@ -83,10 +85,19 @@ function App() {
       formData.append('enableSpeakerIdentification', enableSpeakerIdentification.toString());
       formData.append('enableSummarization', enableSummarization.toString());
 
+      // 根據檔案大小估算處理時間
+      const fileSizeInMB = audioFile.size / (1024 * 1024);
+      if (fileSizeInMB > 25) {
+        setProgress(`大檔案處理中 (${fileSizeInMB.toFixed(1)}MB)，預計需要 ${Math.ceil(fileSizeInMB / 5)} 分鐘...`);
+      } else {
+        setProgress(`處理中 (${fileSizeInMB.toFixed(1)}MB)，請稍候...`);
+      }
+
       const response = await axios.post('/api/transcribe', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        timeout: 600000, // 10分鐘超時
       });
 
       setTranscription(response.data.text);
@@ -102,6 +113,7 @@ function App() {
       setError('轉錄失敗: ' + (err.response?.data?.error || err.message));
     } finally {
       setLoading(false);
+      setProgress('');
     }
   };
 
@@ -202,6 +214,11 @@ function App() {
           >
             {loading ? '轉錄中...' : '開始轉錄'}
           </button>
+          {progress && (
+            <div className="progress-section">
+              <p className="progress-text">{progress}</p>
+            </div>
+          )}
         </div>
 
         {/* 錯誤訊息 */}
