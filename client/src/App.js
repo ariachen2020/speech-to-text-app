@@ -4,7 +4,6 @@ import './App.css';
 
 function App() {
   const [apiKey, setApiKey] = useState('');
-  const [recording, setRecording] = useState(false);
   const [audioFile, setAudioFile] = useState(null);
   const [transcription, setTranscription] = useState('');
   const [speakerSegments, setSpeakerSegments] = useState([]);
@@ -15,41 +14,7 @@ function App() {
   const [enableSummarization, setEnableSummarization] = useState(false);
   const [error, setError] = useState('');
   
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
 
-  // 開始錄音
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      audioChunksRef.current = [];
-
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
-      };
-
-      mediaRecorderRef.current.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        const audioFile = new File([audioBlob], 'recording.wav', { type: 'audio/wav' });
-        setAudioFile(audioFile);
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorderRef.current.start();
-      setRecording(true);
-    } catch (err) {
-      setError('無法存取麥克風: ' + err.message);
-    }
-  };
-
-  // 停止錄音
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && recording) {
-      mediaRecorderRef.current.stop();
-      setRecording(false);
-    }
-  };
 
   // 處理檔案上傳
   const handleFileUpload = (event) => {
@@ -67,7 +32,7 @@ function App() {
     }
 
     if (!apiKey) {
-      setError('請輸入 OpenAI API 金鑰');
+      setError('請輸入 Groq API 金鑰');
       return;
     }
 
@@ -127,7 +92,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>語音轉文字應用程式</h1>
+        <h1>語音轉文字應用程式 (Groq)</h1>
         <p>支援 iPhone 語音備忘錄 (.m4a)、MP3、WAV 等格式</p>
       </header>
 
@@ -137,34 +102,18 @@ function App() {
           <h2>API 設定</h2>
           <input
             type="password"
-            placeholder="輸入 OpenAI API 金鑰"
+            placeholder="輸入 Groq API 金鑰"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             className="api-key-input"
           />
-          <small>您的 API 金鑰不會被儲存，僅用於本次轉錄</small>
+          <small>您的 Groq API 金鑰不會被儲存，僅用於本次轉錄</small>
         </div>
 
-        {/* 錄音區域 */}
-        <div className="recording-section">
-          <h2>錄音</h2>
-          <div className="recording-controls">
-            {!recording ? (
-              <button onClick={startRecording} className="record-button">
-                🎤 開始錄音
-              </button>
-            ) : (
-              <button onClick={stopRecording} className="stop-button">
-                ⏹️ 停止錄音
-              </button>
-            )}
-            {recording && <span className="recording-indicator">錄音中...</span>}
-          </div>
-        </div>
 
         {/* 檔案上傳區域 */}
         <div className="upload-section">
-          <h2>或上傳音訊檔案</h2>
+          <h2>上傳音訊檔案</h2>
           <input
             type="file"
             accept=".mp3,.wav,.m4a,.aac,.ogg,.flac,.mp4"

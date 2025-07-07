@@ -12,7 +12,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dev": "react-scripts start"
+    "dev": "PORT=3001 react-scripts start"
   },
   "devDependencies": {
     "react-scripts": "5.0.1"

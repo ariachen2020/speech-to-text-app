@@ -3,7 +3,7 @@ const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
-const OpenAI = require('openai');
+const Groq = require('groq-sdk');
 const ffmpeg = require('fluent-ffmpeg');
 const ffmpegStatic = require('ffmpeg-static');
 
@@ -137,10 +137,10 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
         const { apiKey, enableSpeakerIdentification, enableSummarization } = req.body;
         
         if (!apiKey) {
-            return res.status(400).json({ error: '請提供 OpenAI API 金鑰' });
+            return res.status(400).json({ error: '請提供 Groq API 金鑰' });
         }
 
-        const openai = new OpenAI({ apiKey });
+        const groq = new Groq({ apiKey });
         const audioFile = req.file;
         
         if (!audioFile) {
@@ -173,9 +173,9 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
             const transcriptionPromises = chunkPaths.map(async (chunkPath, index) => {
                 console.log(`開始處理片段 ${index + 1}/${chunkPaths.length}`);
                 try {
-                    const transcription = await openai.audio.transcriptions.create({
+                    const transcription = await groq.audio.transcriptions.create({
                         file: fs.createReadStream(chunkPath),
-                        model: 'whisper-1',
+                        model: 'whisper-large-v3',
                         response_format: 'verbose_json',
                         timestamp_granularities: ['segment']
                     });
@@ -201,9 +201,9 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
             transcriptionResults = await Promise.all(transcriptionPromises);
         } else {
             // 直接處理小檔案
-            const transcription = await openai.audio.transcriptions.create({
+            const transcription = await groq.audio.transcriptions.create({
                 file: fs.createReadStream(mp3Path),
-                model: 'whisper-1',
+                model: 'whisper-large-v3',
                 response_format: 'verbose_json',
                 timestamp_granularities: ['segment']
             });
@@ -228,8 +228,8 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
 
         // 重點整理
         if (enableSummarization === 'true') {
-            const summary = await openai.chat.completions.create({
-                model: 'gpt-3.5-turbo',
+            const summary = await groq.chat.completions.create({
+                model: 'llama-3.3-70b-versatile',
                 messages: [
                     {
                         role: 'system',
