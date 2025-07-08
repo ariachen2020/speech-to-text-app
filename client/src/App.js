@@ -6,10 +6,12 @@ function App() {
   const [apiKey, setApiKey] = useState('');
   const [audioFile, setAudioFile] = useState(null);
   const [transcription, setTranscription] = useState('');
+  const [segments, setSegments] = useState([]);
   const [speakerSegments, setSpeakerSegments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState('');
   const [enableSpeakerIdentification, setEnableSpeakerIdentification] = useState(false);
+  const [showTimestamps, setShowTimestamps] = useState(false);
   const [error, setError] = useState('');
   
 
@@ -37,6 +39,7 @@ function App() {
     setLoading(true);
     setError('');
     setTranscription('');
+    setSegments([]);
     setSpeakerSegments([]);
     setProgress('準備上傳檔案...');
 
@@ -62,6 +65,10 @@ function App() {
       });
 
       setTranscription(response.data.text);
+      
+      if (response.data.segments) {
+        setSegments(response.data.segments);
+      }
       
       if (response.data.speakerSegments) {
         setSpeakerSegments(response.data.speakerSegments);
@@ -135,6 +142,16 @@ function App() {
               啟用說話者識別
             </label>
           </div>
+          <div className="option">
+            <label>
+              <input
+                type="checkbox"
+                checked={showTimestamps}
+                onChange={(e) => setShowTimestamps(e.target.checked)}
+              />
+              顯示時間標記
+            </label>
+          </div>
         </div>
 
         {/* 轉錄按鈕 */}
@@ -164,9 +181,22 @@ function App() {
         {transcription && (
           <div className="results-section">
             <h2>轉錄結果</h2>
-            <div className="transcription-text">
-              <p>{transcription}</p>
-            </div>
+            {showTimestamps && segments.length > 0 ? (
+              <div className="transcription-segments">
+                {segments.map((segment, index) => (
+                  <div key={index} className="transcription-segment">
+                    <div className="segment-time">
+                      {formatTime(segment.start)} - {formatTime(segment.end)}
+                    </div>
+                    <div className="segment-text">{segment.text}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="transcription-text">
+                <p>{transcription}</p>
+              </div>
+            )}
           </div>
         )}
 
