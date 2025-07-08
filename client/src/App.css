@@ -248,7 +248,7 @@
 }
 
 /* 結果區域 */
-.results-section, .speakers-section, .summary-section {
+.results-section, .speakers-section {
   background-color: #d4edda;
   border: 1px solid #c3e6cb;
   padding: 20px;
@@ -256,12 +256,12 @@
   text-align: left;
 }
 
-.results-section h2, .speakers-section h2, .summary-section h2 {
+.results-section h2, .speakers-section h2 {
   margin-top: 0;
   color: #155724;
 }
 
-.transcription-text, .summary-text {
+.transcription-text {
   background-color: white;
   padding: 15px;
   border-radius: 8px;

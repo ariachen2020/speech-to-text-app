@@ -7,11 +7,9 @@ function App() {
   const [audioFile, setAudioFile] = useState(null);
   const [transcription, setTranscription] = useState('');
   const [speakerSegments, setSpeakerSegments] = useState([]);
-  const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState('');
   const [enableSpeakerIdentification, setEnableSpeakerIdentification] = useState(false);
-  const [enableSummarization, setEnableSummarization] = useState(false);
   const [error, setError] = useState('');
   
 
@@ -40,7 +38,6 @@ function App() {
     setError('');
     setTranscription('');
     setSpeakerSegments([]);
-    setSummary('');
     setProgress('準備上傳檔案...');
 
     try {
@@ -48,7 +45,6 @@ function App() {
       formData.append('audio', audioFile);
       formData.append('apiKey', apiKey);
       formData.append('enableSpeakerIdentification', enableSpeakerIdentification.toString());
-      formData.append('enableSummarization', enableSummarization.toString());
 
       // 根據檔案大小估算處理時間
       const fileSizeInMB = audioFile.size / (1024 * 1024);
@@ -71,9 +67,6 @@ function App() {
         setSpeakerSegments(response.data.speakerSegments);
       }
       
-      if (response.data.summary) {
-        setSummary(response.data.summary);
-      }
     } catch (err) {
       setError('轉錄失敗: ' + (err.response?.data?.error || err.message));
     } finally {
@@ -142,16 +135,6 @@ function App() {
               啟用說話者識別
             </label>
           </div>
-          <div className="option">
-            <label>
-              <input
-                type="checkbox"
-                checked={enableSummarization}
-                onChange={(e) => setEnableSummarization(e.target.checked)}
-              />
-              啟用重點整理
-            </label>
-          </div>
         </div>
 
         {/* 轉錄按鈕 */}
@@ -207,15 +190,6 @@ function App() {
           </div>
         )}
 
-        {/* 重點整理 */}
-        {summary && (
-          <div className="summary-section">
-            <h2>重點整理</h2>
-            <div className="summary-text">
-              <p>{summary}</p>
-            </div>
-          </div>
-        )}
       </main>
     </div>
   );

@@ -134,7 +134,7 @@ function mergeTranscriptionResults(results) {
 // 語音轉文字 API
 app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
     try {
-        const { apiKey, enableSpeakerIdentification, enableSummarization } = req.body;
+        const { apiKey, enableSpeakerIdentification } = req.body;
         
         if (!apiKey) {
             return res.status(400).json({ error: '請提供 Groq API 金鑰' });
@@ -226,25 +226,6 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
             response.speakerSegments = await identifySpeakers(finalResult.segments);
         }
 
-        // 重點整理
-        if (enableSummarization === 'true') {
-            const summary = await groq.chat.completions.create({
-                model: 'llama-3.3-70b-versatile',
-                messages: [
-                    {
-                        role: 'system',
-                        content: '請為以下文字內容製作重點整理，用繁體中文回答。'
-                    },
-                    {
-                        role: 'user',
-                        content: finalResult.text
-                    }
-                ],
-                max_tokens: 500
-            });
-            
-            response.summary = summary.choices[0].message.content;
-        }
 
         // 清理上傳的檔案
         try {

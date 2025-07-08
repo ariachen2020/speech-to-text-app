@@ -1,7 +1,7 @@
 {
   "name": "speech-to-text-app",
   "version": "1.0.0",
-  "description": "Speech-to-text application with speaker identification and summarization",
+  "description": "Speech-to-text application with speaker identification",
   "main": "server.js",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
