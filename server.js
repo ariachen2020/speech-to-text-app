@@ -173,12 +173,27 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
             const transcriptionPromises = chunkPaths.map(async (chunkPath, index) => {
                 console.log(`開始處理片段 ${index + 1}/${chunkPaths.length}`);
                 try {
-                    const transcription = await groq.audio.transcriptions.create({
+                    // 首先做一次轉錄以檢測語言
+                    const initialTranscription = await groq.audio.transcriptions.create({
                         file: fs.createReadStream(chunkPath),
                         model: 'whisper-large-v3',
                         response_format: 'verbose_json',
                         timestamp_granularities: ['segment']
                     });
+                    
+                    let transcription = initialTranscription;
+                    
+                    // 如果檢測到中文，重新轉錄以確保繁體中文輸出
+                    if (initialTranscription.language === 'zh' || /[\u4e00-\u9fff]/.test(initialTranscription.text)) {
+                        transcription = await groq.audio.transcriptions.create({
+                            file: fs.createReadStream(chunkPath),
+                            model: 'whisper-large-v3',
+                            response_format: 'verbose_json',
+                            timestamp_granularities: ['segment'],
+                            language: 'zh',
+                            prompt: '請使用繁體中文進行轉錄。這是一段中文語音。'
+                        });
+                    }
                     
                     console.log(`片段 ${index + 1} 處理完成`);
                     
@@ -201,12 +216,27 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
             transcriptionResults = await Promise.all(transcriptionPromises);
         } else {
             // 直接處理小檔案
-            const transcription = await groq.audio.transcriptions.create({
+            // 首先做一次轉錄以檢測語言
+            const initialTranscription = await groq.audio.transcriptions.create({
                 file: fs.createReadStream(mp3Path),
                 model: 'whisper-large-v3',
                 response_format: 'verbose_json',
                 timestamp_granularities: ['segment']
             });
+            
+            let transcription = initialTranscription;
+            
+            // 如果檢測到中文，重新轉錄以確保繁體中文輸出
+            if (initialTranscription.language === 'zh' || /[\u4e00-\u9fff]/.test(initialTranscription.text)) {
+                transcription = await groq.audio.transcriptions.create({
+                    file: fs.createReadStream(mp3Path),
+                    model: 'whisper-large-v3',
+                    response_format: 'verbose_json',
+                    timestamp_granularities: ['segment'],
+                    language: 'zh',
+                    prompt: '請使用繁體中文進行轉錄。這是一段中文語音。'
+                });
+            }
             
             transcriptionResults.push(transcription);
         }
