@@ -12,6 +12,7 @@ function App() {
   const [progress, setProgress] = useState('');
   const [enableSpeakerIdentification, setEnableSpeakerIdentification] = useState(false);
   const [showTimestamps, setShowTimestamps] = useState(false);
+  const [enhancementLevel, setEnhancementLevel] = useState('medium');
   const [error, setError] = useState('');
   
 
@@ -48,13 +49,16 @@ function App() {
       formData.append('audio', audioFile);
       formData.append('apiKey', apiKey);
       formData.append('enableSpeakerIdentification', enableSpeakerIdentification.toString());
+      formData.append('enhancementLevel', enhancementLevel);
 
       // 根據檔案大小估算處理時間
       const fileSizeInMB = audioFile.size / (1024 * 1024);
+      const enhancementText = enhancementLevel === 'light' ? '輕度增強' : 
+                             enhancementLevel === 'medium' ? '中度增強' : '強力增強';
       if (fileSizeInMB > 25) {
-        setProgress(`大檔案處理中 (${fileSizeInMB.toFixed(1)}MB)，預計需要 ${Math.ceil(fileSizeInMB / 5)} 分鐘...`);
+        setProgress(`大檔案處理中 (${fileSizeInMB.toFixed(1)}MB，${enhancementText})，預計需要 ${Math.ceil(fileSizeInMB / 5)} 分鐘...`);
       } else {
-        setProgress(`處理中 (${fileSizeInMB.toFixed(1)}MB)，請稍候...`);
+        setProgress(`處理中 (${fileSizeInMB.toFixed(1)}MB，${enhancementText})，請稍候...`);
       }
 
       const response = await axios.post('/api/transcribe', formData, {
@@ -94,6 +98,7 @@ function App() {
       <header className="App-header">
         <h1>語音轉文字應用程式 (Groq)</h1>
         <p>支援 iPhone 語音備忘錄 (.m4a)、MP3、WAV 等格式</p>
+        <p>✨ 內建智能音訊增強功能，有效抑制背景噪音，提升轉錄準確度</p>
       </header>
 
       <main className="App-main">
@@ -151,6 +156,21 @@ function App() {
               />
               顯示時間標記
             </label>
+          </div>
+          <div className="option">
+            <label>
+              音訊增強等級：
+              <select 
+                value={enhancementLevel} 
+                onChange={(e) => setEnhancementLevel(e.target.value)}
+                className="enhancement-select"
+              >
+                <option value="light">輕度 - 基本噪音抑制</option>
+                <option value="medium">中度 - 適合一般噪音環境</option>
+                <option value="aggressive">強力 - 適合嘈雜環境</option>
+              </select>
+            </label>
+            <small>較高的增強等級可以更好地抑制背景噪音，但可能會稍微影響處理速度</small>
           </div>
         </div>
 

@@ -36,6 +36,77 @@ const upload = multer({
     }
 });
 
+// 增強音訊預處理 - 噪音抑制和清理
+async function enhanceAudioForTranscription(inputPath, enhancementLevel = 'medium') {
+    return new Promise((resolve, reject) => {
+        if (!fs.existsSync(inputPath)) {
+            reject(new Error(`輸入檔案不存在: ${inputPath}`));
+            return;
+        }
+
+        const outputPath = inputPath + '_enhanced.wav';
+        
+        // 根據增強等級選擇不同的濾波器組合
+        let audioFilters = [];
+        
+        switch (enhancementLevel) {
+            case 'light':
+                // 輕度增強：基本噪音抑制
+                audioFilters = [
+                    'highpass=f=200',  // 移除低頻噪音
+                    'lowpass=f=3400',  // 移除高頻噪音
+                    'volume=1.2'       // 輕微增強音量
+                ];
+                break;
+                
+            case 'medium':
+                // 中度增強：適合一般噪音環境
+                audioFilters = [
+                    'highpass=f=300',      // 移除低頻噪音
+                    'afftdn=nr=12:nf=-50', // FFT 噪音抑制
+                    'lowpass=f=3000',      // 移除高頻噪音
+                    'compand=0.3,1:6:-70,-60,-20', // 動態範圍壓縮
+                    'volume=1.5'           // 增強音量
+                ];
+                break;
+                
+            case 'aggressive':
+                // 強力增強：適合嘈雜環境
+                audioFilters = [
+                    'highpass=f=400',           // 強力低頻濾波
+                    'afftdn=nr=20:nf=-40',      // 強力 FFT 噪音抑制
+                    'anlmdn=s=0.00001:p=0.004:r=0.004:m=15', // 非局部均值去噪
+                    'lowpass=f=2800',           // 強力高頻濾波
+                    'compand=0.1,1:6:-80,-70,-30', // 強力動態範圍壓縮
+                    'volume=2.0'                // 大幅增強音量
+                ];
+                break;
+                
+            default:
+                audioFilters = ['highpass=f=200', 'lowpass=f=3400'];
+        }
+
+        console.log(`開始音訊增強處理 (${enhancementLevel} 模式)...`);
+        
+        ffmpeg(inputPath)
+            .audioCodec('pcm_s16le')
+            .audioFrequency(16000)     // 降採樣到 16kHz，適合語音識別
+            .audioChannels(1)          // 轉換為單聲道
+            .audioFilters(audioFilters)
+            .format('wav')
+            .output(outputPath)
+            .on('end', () => {
+                console.log('音訊增強完成');
+                resolve(outputPath);
+            })
+            .on('error', (err) => {
+                console.error('音訊增強失敗:', err);
+                reject(err);
+            })
+            .run();
+    });
+}
+
 // 轉換音訊格式為 mp3（如果需要）
 async function convertToMp3(inputPath) {
     return new Promise((resolve, reject) => {
@@ -134,7 +205,7 @@ function mergeTranscriptionResults(results) {
 // 語音轉文字 API
 app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
     try {
-        const { apiKey, enableSpeakerIdentification } = req.body;
+        const { apiKey, enableSpeakerIdentification, enhancementLevel = 'medium' } = req.body;
         
         if (!apiKey) {
             return res.status(400).json({ error: '請提供 Groq API 金鑰' });
@@ -151,11 +222,15 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
             originalname: audioFile.originalname,
             mimetype: audioFile.mimetype,
             size: audioFile.size,
-            path: audioFile.path
+            path: audioFile.path,
+            enhancementLevel: enhancementLevel
         });
 
+        // 音訊增強預處理
+        const enhancedPath = await enhanceAudioForTranscription(audioFile.path, enhancementLevel);
+        
         // 轉換為 mp3 格式（如果需要）
-        const mp3Path = await convertToMp3(audioFile.path);
+        const mp3Path = await convertToMp3(enhancedPath);
 
         // 檢查檔案大小，如果超過 25MB 則切割
         const stats = fs.statSync(mp3Path);
@@ -262,7 +337,10 @@ app.post('/api/transcribe', upload.single('audio'), async (req, res) => {
             if (fs.existsSync(audioFile.path)) {
                 fs.unlinkSync(audioFile.path);
             }
-            if (mp3Path !== audioFile.path && fs.existsSync(mp3Path)) {
+            if (enhancedPath !== audioFile.path && fs.existsSync(enhancedPath)) {
+                fs.unlinkSync(enhancedPath);
+            }
+            if (mp3Path !== audioFile.path && mp3Path !== enhancedPath && fs.existsSync(mp3Path)) {
                 fs.unlinkSync(mp3Path);
             }
         } catch (cleanupError) {

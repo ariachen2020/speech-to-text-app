@@ -188,6 +188,23 @@
   transform: scale(1.2);
 }
 
+.enhancement-select {
+  margin-left: 10px;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  background-color: white;
+  font-size: 14px;
+  color: #495057;
+  min-width: 200px;
+}
+
+.enhancement-select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
 /* 轉錄按鈕 */
 .transcribe-section {
   margin: 20px 0;
