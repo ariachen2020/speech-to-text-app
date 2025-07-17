@@ -65,7 +65,7 @@ async function enhanceAudioForTranscription(inputPath, enhancementLevel = 'mediu
                     'highpass=f=300',      // 移除低頻噪音
                     'afftdn=nr=12:nf=-50', // FFT 噪音抑制
                     'lowpass=f=3000',      // 移除高頻噪音
-                    'compand=0.3,1:6:-70,-60,-20', // 動態範圍壓縮
+                    'compand=attacks=0.3:decays=1:points=-70/-70|-60/-20|1/0', // 動態範圍壓縮
                     'volume=1.5'           // 增強音量
                 ];
                 break;
@@ -77,7 +77,7 @@ async function enhanceAudioForTranscription(inputPath, enhancementLevel = 'mediu
                     'afftdn=nr=20:nf=-40',      // 強力 FFT 噪音抑制
                     'anlmdn=s=0.00001:p=0.004:r=0.004:m=15', // 非局部均值去噪
                     'lowpass=f=2800',           // 強力高頻濾波
-                    'compand=0.1,1:6:-80,-70,-30', // 強力動態範圍壓縮
+                    'compand=attacks=0.1:decays=1:points=-80/-80|-70/-30|1/0', // 強力動態範圍壓縮
                     'volume=2.0'                // 大幅增強音量
                 ];
                 break;
