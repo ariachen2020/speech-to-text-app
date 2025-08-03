@@ -14,6 +14,7 @@ function App() {
   const [showTimestamps, setShowTimestamps] = useState(false);
   const [enhancementLevel, setEnhancementLevel] = useState('medium');
   const [error, setError] = useState('');
+  const [copySuccess, setCopySuccess] = useState('');
   
 
 
@@ -91,6 +92,16 @@ function App() {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // 複製到剪貼簿
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(transcription).then(() => {
+      setCopySuccess('已複製!');
+      setTimeout(() => setCopySuccess(''), 2000);
+    }, () => {
+      setCopySuccess('複製失敗');
+    });
   };
 
   return (
@@ -200,7 +211,12 @@ function App() {
         {/* 轉錄結果 */}
         {transcription && (
           <div className="results-section">
-            <h2>轉錄結果</h2>
+            <div className="result-header">
+              <h2>轉錄結果</h2>
+              <button onClick={copyToClipboard} className="copy-button">
+                {copySuccess ? '已複製!' : '複製文字'}
+              </button>
+            </div>
             {showTimestamps && segments.length > 0 ? (
               <div className="transcription-segments">
                 {segments.map((segment, index) => (
